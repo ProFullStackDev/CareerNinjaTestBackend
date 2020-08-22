@@ -26,10 +26,21 @@ router.get ('/count', async (req, res) => {
 });
 
 router.get ('/search', async (req, res) => {
-  console.log (req.query);
+  const length = Object.keys (req.query).length;
   try {
-    const list = await Got.find (req.query);
+    let list = undefined;
 
+    if (length === 0) {
+      list = await Got.find (req.query);
+    } else {
+      const searchObj = {};
+
+      for (prop in req.query) {
+        searchObj[prop] = {$regex: `^${req.query[prop]}`, $options: 'i'};
+      }
+      console.log (searchObj);
+      list = await Got.find (searchObj);
+    }
     res.status (200).send (list);
   } catch (e) {
     res.status (400).send (e);
